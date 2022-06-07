@@ -1,14 +1,14 @@
 package main
 
 import (
-	"bytes"
-	"encoding/hex"
-	"fmt"
-	"log"
-	"net"
-	"sort"
-	"strconv"
-	"strings"
+"bytes"
+"encoding/hex"
+"fmt"
+"log"
+"net"
+"sort"
+"strconv"
+"strings"
 )
 
 //This is a dictionary of every test we currently run organized by name-hex payload
@@ -27,11 +27,27 @@ var cmds = map[string]string{
 	"I2C_READ":             "00070205000300A000",
 }
 
+//This is a dictionary of every ideal response we currently we should get when we run the tests
+//Each string represents a hex payload
+var expected_resps = map[string]string{
+	"GPIO_SET_PUD":         "010500030001",
+	"GPIO_SET_DIR":         "010500030001",
+	"GPIO_SET_LVL":         "010500030001",
+	"GPIO_READ_PUD":        "01050003010102",
+	"GPIO_READ_DIR":        "01050003010101",
+	"GPIO_READ_LVL":        "010500030101",
+	"MDIO_READ_8221_REG":   "010601040102000f",
+	"MDIO_READ_8489_REG_1": "0106010400020001",
+	"MDIO_READ_8489_REG_2": "0106010401028489",
+	"I2C_WRITE":            "01050203000101",
+	"I2C_READ":             "0106020401020003",
+}
+
 func main() {
 	//The IP address, the port, and the serial port of the test server
 	//The Serial port which the physical connector is plugged into can be easily changed
 	var HOST = "172.16.252.9"
-	var PORT_SERIAL = 10                                                      //The Serial port the digikey connector is plugged into
+	var PORT_SERIAL = 12                                                      //The Serial port the digikey connector is plugged into
 	var PORT_BASE = "101XX"                                                   //The base port for the machine
 	var PORT = strings.Replace(PORT_BASE, "XX", strconv.Itoa(PORT_SERIAL), 1) //The actual port passed into the socket init
 
@@ -52,11 +68,27 @@ func main() {
 	//Send every command in the list of commands we have & output their label
 	for index, name := range names {
 		command := cmds[name]
-		fmt.Printf("Test %d: %s\n", index+1, name)
+		expected_resp := expected_resps[name]
+		passed := ""
+		reply, err := send_test_cmd(conn, command) //Get the response of the target device
+
+		//Determine if the test passed
+		if strings.Compare(reply, expected_resp) == 0 {
+			passed = "PASS"
+		} else {
+			passed = "FAIL"
+		}
+
+		//Display the test to the user
+		fmt.Printf("Test %d: %s [%s]\n", index+1, name, passed)
 		fmt.Printf("Command: %s\n", command)
-		reply, err := send_test_cmd(conn, command)
 		checkErr(err)
 		fmt.Printf("Response: %s \n", reply)
+		//Print the expected response if the test failed
+		if strings.Compare(passed, "FAIL") == 0 {
+			fmt.Printf("EXPECTED RESPONSE: %s \n", expected_resp)
+		}
+		fmt.Print("\n") //Newline pad
 	}
 }
 
@@ -94,3 +126,4 @@ func checkErr(err error) {
 		log.Fatal(err)
 	}
 }
+
