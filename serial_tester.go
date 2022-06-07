@@ -35,8 +35,6 @@ func main() {
 	var PORT_BASE = "101XX"                                                   //The base port for the machine
 	var PORT = strings.Replace(PORT_BASE, "XX", strconv.Itoa(PORT_SERIAL), 1) //The actual port passed into the socket init
 
-	fmt.Println("RUN")
-
 	//Set up the socket
 	conn, err := net.Dial("tcp", HOST+":"+PORT)
 	checkErr(err)
