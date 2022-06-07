@@ -31,7 +31,7 @@ func main() {
 	//The IP address, the port, and the serial port of the test server
 	//The Serial port which the physical connector is plugged into can be easily changed
 	var HOST = "172.16.252.9"
-	var PORT_SERIAL = 12                                                      //The Serial port the digikey connector is plugged into
+	var PORT_SERIAL = 10                                                      //The Serial port the digikey connector is plugged into
 	var PORT_BASE = "101XX"                                                   //The base port for the machine
 	var PORT = strings.Replace(PORT_BASE, "XX", strconv.Itoa(PORT_SERIAL), 1) //The actual port passed into the socket init
 
